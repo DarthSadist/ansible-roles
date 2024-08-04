@@ -1,5 +1,0 @@
----
-# tasks file for hostname
-- name: Change hostname to  ProductionNext
-  hostname:
-    name: ProductionNext
