@@ -1,7 +1,37 @@
----
-# tasks file for common
+
 # tasks file for common
 
-- name: set timezone to Europe/Paris
+- name: set timezone to Europe/Moscow  # Название задачи: Установка часового пояса на Европу/Москву
   timezone:
-    name: Europe/Paris
+    name: Europe/Moscow  # Установка часового пояса на Европу/Москву
+
+- block:  # Блок задач, объединяющий несколько связанных задач
+    - name: create a swap file  # Название задачи: Создание swap-файла
+      shell: fallocate -l {{ swap_size }} /swapfile  # Использование команды `fallocate` для создания файла размера {{ swap_size }} в /swapfile
+      args:
+        creates: /swapfile  # Аргумент, предотвращающий повторное выполнение команды, если файл уже существует
+
+    - name: set the correct permissions  # Название задачи: Установка правильных прав доступа
+      file:
+        path: /swapfile  # Путь к файлу
+        owner: root  # Установка владельца файла на root
+        group: root  # Установка группы файла на root
+        mode: '0600'  # Установка прав доступа к файлу на 0600 (только владелец может читать и записывать)
+
+    - name: make the file a swap file  # Название задачи: Инициализация файла как swap
+      shell: mkswap /swapfile  # Использование команды `mkswap` для инициализации swap-файла
+      when: ansible_facts.swapfree_mb == 0  # Условие выполнения: только если свободная память swap равна 0
+
+    - name: enable the swap file  # Название задачи: Активация swap-файла
+      shell: swapon /swapfile  # Использование команды `swapon` для активации swap-файла
+      when: ansible_facts.swapfree_mb == 0  # Условие выполнения: только если свободная память swap равна 0
+
+    - name: add swap file to fstab  # Название задачи: Добавление swap-файла в fstab
+      mount:
+        name: none  # Точка монтирования (не требуется для swap)
+        src: /swapfile  # Исходный файл (swap-файл)
+        fstype: swap  # Тип файловой системы (swap)
+        opts: sw  # Параметры монтирования (sw)
+        passno: 0  # Порядок проверки файловой системы при загрузке (0 - не проверять)
+        dump: 0  # Указание сохранять дамп файловой системы (0 - не сохранять)
+        state: present  # Состояние: должно быть присутствовать в fstab
