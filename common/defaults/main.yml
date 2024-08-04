@@ -1,2 +1,5 @@
 ---
-swap_size: 1G
+
+timezone: "Europe/Moscow"  # Часовой пояс по умолчанию
+swapfile_path: "/swapfile"  # Путь к файлу swap по умолчанию
+swap_size: "1G"  # Размер swap-файла по умолчанию
