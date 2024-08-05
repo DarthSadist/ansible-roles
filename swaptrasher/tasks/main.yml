@@ -1,32 +1,32 @@
 ---
 # tasks file for swaptrasher
 
-- name: Check if swap is enabled  # Проверка, включен ли swap
-  command: swapon --show  # Выполнение команды `swapon --show` для отображения информации о текущих swap-устройствах
-  register: swap_status  # Сохранение результата команды в переменную `swap_status`
-  changed_when: false  # Указание Ansible, что выполнение этой задачи не изменяет состояние системы
+- name: Manage swapfile  # Управление swap-файлом
+  block:  # Объединение всех задач в один блок
+    - name: Check if swap is enabled  # Проверка, включен ли swap
+      command: swapon --show  # Выполнение команды `swapon --show` для отображения информации о текущих swap-устройствах
+      register: swap_status  # Сохранение результата команды в переменную `swap_status`
+      changed_when: false  # Указание Ansible, что выполнение этой задачи не изменяет состояние системы
 
-- name: Check if swapfile exists  # Проверка, существует ли swap-файл
-  stat:
-    path: "{{ swapfile_path }}"  # Путь к файлу swap
-  register: swapfile_exists  # Сохранение результата проверки в переменную `swapfile_exists`
+    - name: Check if swapfile exists  # Проверка, существует ли swap-файл
+      stat:
+        path: "{{ swapfile_path }}"  # Путь к файлу swap
+      register: swapfile_exists  # Сохранение результата проверки в переменную `swapfile_exists`
 
-- name: Disable swap if enabled  # Отключение swap, если он включен
-  shell: "swapoff {{ swapfile_path }}"  # Выполнение команды `swapoff` для отключения swap по указанному пути
-  when: swapfile_exists.stat.exists and swap_status.stdout != ""  # Условие выполнения задачи: только если файл существует и swap включен
-  become: true  # Выполнение задачи с повышенными привилегиями (sudo)
+    - name: Disable swap if enabled  # Отключение swap, если он включен
+      shell: "swapoff {{ swapfile_path }}"  # Выполнение команды `swapoff` для отключения swap по указанному пути
+      when: swapfile_exists.stat.exists and swap_status.stdout != ""  # Условие выполнения задачи: только если файл существует и swap включен
 
-- name: Remove swapfile if it exists  # Удаление файла swap, если он существует
-  file:
-    path: "{{ swapfile_path }}"  # Путь к файлу swap, используемый в задаче
-    state: absent  # Указание Ansible, что файл должен быть удален (отсутствовать)
-  when: swapfile_exists.stat.exists  # Условие выполнения задачи: только если файл существует
-  become: true  # Выполнение задачи с повышенными привилегиями (sudo)
+    - name: Remove swapfile if it exists  # Удаление файла swap, если он существует
+      file:
+        path: "{{ swapfile_path }}"  # Путь к файлу swap, используемый в задаче
+        state: absent  # Указание Ansible, что файл должен быть удален (отсутствовать)
+      when: swapfile_exists.stat.exists  # Условие выполнения задачи: только если файл существует
 
-- name: Remove swap entry from fstab  # Удаление записи о swap из fstab
-  lineinfile:
-    path: /etc/fstab  # Путь к файлу fstab
-    state: absent  # Указание Ansible, что строка должна быть удалена
-    regexp: '^{{ swapfile_path }}\s'  # Регулярное выражение для поиска строки, начинающейся с пути к файлу swap
-  when: swapfile_exists.stat.exists  # Условие выполнения задачи: только если файл существует
-  become: true  # Выполнение задачи с повышенными привилегиями (sudo)
+    - name: Remove swap entry from fstab  # Удаление записи о swap из fstab
+      lineinfile:
+        path: /etc/fstab  # Путь к файлу fstab
+        state: absent  # Указание Ansible, что строка должна быть удалена
+        regexp: '^{{ swapfile_path }}\s'  # Регулярное выражение для поиска строки, начинающейся с пути к файлу swap
+      when: swapfile_exists.stat.exists  # Условие выполнения задачи: только если файл существует
+  become: true  # Выполнение всех задач блока с повышенными привилегиями (sudo)
