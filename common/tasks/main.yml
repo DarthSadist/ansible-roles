@@ -39,3 +39,8 @@
 - name: set hostname  # Название задачи: Установка имени хоста
   hostname:
     name: "{{ inventory_hostname }}"  # Установка имени хоста на основе переменной inventory_hostname
+
+- name: update apt cache  # Название задачи: обновить кэш apt
+  apt:
+    update_cache: yes  # Обновление кэша пакетов apt
+  become: yes  # Выполнение задачи с повышенными привилегиями (sudo)
