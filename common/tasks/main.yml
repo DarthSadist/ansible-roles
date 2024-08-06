@@ -1,4 +1,3 @@
-
 # tasks file for common
 
 - name: set timezone  # Название задачи: Установка часового пояса
@@ -43,4 +42,13 @@
 - name: update apt cache  # Название задачи: обновить кэш apt
   apt:
     update_cache: yes  # Обновление кэша пакетов apt
-  become: yes  # Выполнение задачи с повышенными привилегиями (sudo)
+  become: yes
+
+- name: installation packages  # Название задачи: установка пакетов
+  apt:  # Использование модуля apt для управления пакетами
+    name:  "{{ item }}"  # Имя пакета для установки, взятое из списка `with_items`
+    state: present  # Указание состояния: пакеты должны быть установлены (present)
+    update_cache: yes  # Обновление кэша пакетов перед установкой
+  with_items:  # Перебор элементов списка `packages`
+    - "{{ packages }}"  # Список пакетов, определенных в переменной `packages`
+  become: yes
