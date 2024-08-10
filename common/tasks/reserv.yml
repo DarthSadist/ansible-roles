@@ -1,3 +1,5 @@
+# tasks file for common
+
 - name: set timezone  # Название задачи: Установка часового пояса
   timezone:
     name: "{{ timezone }}"  # Установка часового пояса из переменной
@@ -49,38 +51,4 @@
     update_cache: yes  # Обновление кэша пакетов перед установкой
   with_items:  # Перебор элементов списка `packages`
     - "{{ packages }}"  # Список пакетов, определенных в переменной `packages`
-  become: yes
-
-- block:  # Блок задач, объединяющий несколько связанных задач
-    - name: add GPG key for docker  # Название задачи: добавление GPG-ключа для Docker
-      apt_key:  # Использование модуля apt_key для добавления ключа
-        url: https://download.docker.com/linux/ubuntu/gpg  # URL-адрес GPG-ключа для Docker
-        state: present  # Состояние: ключ должен быть добавлен
-
-    - name: add repository for docker  # Название задачи: добавление репозитория для Docker
-      apt_repository:  # Использование модуля apt_repository для добавления репозитория
-        repo: 'deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable'  # Репозиторий Docker для текущего дистрибутива Ubuntu
-        state: present  # Состояние: репозиторий должен быть добавлен
-
-    - name: update cache  # Название задачи: обновление кэша apt
-      apt:  # Использование модуля apt для управления пакетами
-        update_cache: yes  # Обновление кэша пакетов apt
-
-    - name: install docker  # Название задачи: установка Docker
-      apt:  # Использование модуля apt для управления пакетами
-        name: docker-ce  # Имя пакета для установки: Docker CE (Community Edition)
-        state: present  # Состояние: пакет должен быть установлен
-
-    - name: install docker-compose using curl  # Название задачи: установка Docker Compose через curl
-      shell: |
-        curl -L "https://github.com/docker/compose/releases/download/v2.21.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        chmod +x /usr/local/bin/docker-compose  # Установка исполняемых прав на файл
-      args:
-        creates: /usr/local/bin/docker-compose  # Аргумент, предотвращающий повторное выполнение команды, если файл уже существует
-
-    - name: check docker service  # Название задачи: проверка сервиса Docker
-      service:  # Использование модуля service для управления сервисами
-        name: docker  # Имя сервиса: Docker
-        state: started  # Состояние: сервис должен быть запущен
-        enabled: yes  # Включение сервиса при загрузке системы
   become: yes

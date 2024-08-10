@@ -1,0 +1,21 @@
+# roles/docker/vars/main.yml
+docker_compose_version: "1.29.2"  # Установи нужную версию
+docker_reboot_required: true  # Или false, в зависимости от требований
+
+# Пакеты, которые требуются на обоих типах серверов
+common_packages:
+  - python3-pip  # Пакет для обоих типов серверов
+# Пакеты для различных групп серверов
+
+docker_required_packages:
+  web:
+    - mc
+    - htop
+    - rsync
+  db:
+    - git
+    - zip
+    - htop
+
+docker_users:
+  - user

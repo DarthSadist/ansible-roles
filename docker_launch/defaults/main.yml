@@ -1,0 +1,5 @@
+---
+# defaults file for docker_launch
+docker_required_packages:
+  - python3-pip
+  - "{{ extra_packages }}"
